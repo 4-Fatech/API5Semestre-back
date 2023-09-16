@@ -18,7 +18,7 @@ export class Equipment {
     observacoes: string
 
     @Column()
-    foto: string
+    foto: []
 
     @Column()
     status: string

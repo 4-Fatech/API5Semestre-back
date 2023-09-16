@@ -1,7 +1,7 @@
 import AppDataSource from "../data-source";
 import { Request, Response } from 'express';
 import { User } from '../entities/User';
-
+import { ObjectID } from 'mongodb'
 
 class UserController {
 
@@ -57,11 +57,15 @@ class UserController {
 
   async update(req: Request, res: Response): Promise<Response> {
     try {
-      const { id, nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha } = req.body
+      const id = req.params.id; 
+
+      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha } = req.body
+
+      const userid = new ObjectID(id)
 
       const usuario = AppDataSource.getRepository(User)
 
-      const obj = await usuario.findOne(id)
+      const obj = await usuario.findOne(userid)
 
       obj.nome = nome
       obj.sobrenome = sobrenome
@@ -80,6 +84,23 @@ class UserController {
       return res.json({ error: "Erro ao atualizar o Usuario" })
     }
   }
+
+
+public async one(req: Request, res: Response): Promise<Response> {
+    const id = req.params.id; 
+
+    const userid = new ObjectID(id)
+
+
+    try {
+        const usuario = await AppDataSource.getRepository(User).findOne(userid)
+
+        return res.json(usuario);
+    } catch (error) {
+        console.error(error);
+        return res.json({ error: 'Erro ao buscar o Usuario' });
+    }
+}
 
 
 } export default new UserController();
