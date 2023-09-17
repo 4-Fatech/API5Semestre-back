@@ -7,7 +7,7 @@ class EquipmentController {
 
     async create(req: Request, res: Response): Promise<Response> {
         try {
-            const { serial, latitude, longitude, observacoes, foto, status } = req.body
+            const { serial, latitude, longitude, observacoes, foto, status, tipo } = req.body
 
             const obj = new Equipment()
             obj.serial = serial
@@ -16,6 +16,7 @@ class EquipmentController {
             obj.observacoes = observacoes
             obj.foto = foto
             obj.status = status
+            obj.tipo = tipo
 
             await AppDataSource.manager.save(Equipment, obj)
 
@@ -39,9 +40,11 @@ class EquipmentController {
 
     async delete(req: Request, res: Response): Promise<Response> {
         try {
+            console.log("aaa")
             const { id } = req.body;
 
             const equipamento = AppDataSource.getRepository(Equipment)
+            equipamento.remove([])
             const remove = await equipamento.findOne(id);
             await equipamento.remove(remove);
 

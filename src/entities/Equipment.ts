@@ -9,6 +9,9 @@ export class Equipment {
     serial: string
 
     @Column()
+    tipo: string
+
+    @Column()
     latitude: string
 
     @Column()
