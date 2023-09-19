@@ -1,6 +1,7 @@
 import AppDataSource from "../data-source";
 import { Request, Response } from 'express';
 import { Equipment } from '../entities/Equipment';
+import { ObjectID } from 'mongodb'
 
 
 class EquipmentController {
@@ -37,6 +38,18 @@ class EquipmentController {
             return res.json({ error: "Erro ao listar os Equipamentos" })
         }
     }
+    async one(req: Request, res: Response): Promise<Response> {
+        try {
+            const id = req.params.id
+            const equipamentoId = new ObjectID(id)
+            const equipamentos = await AppDataSource.getRepository(Equipment).findOne(equipamentoId)
+            return res.json(equipamentos)
+
+        } catch (error) {
+            console.log(error)
+            return res.json({ error: "Erro ao listar os Equipamentos" })
+        }
+    }
 
     async delete(req: Request, res: Response): Promise<Response> {
         try {
@@ -57,7 +70,7 @@ class EquipmentController {
 
     async update(req: Request, res: Response): Promise<Response> {
         try {
-            const { id, serial, latitude, longitude, observacoes, foto, status } = req.body
+            const { id, serial, latitude, longitude, observacoes, foto, status, tipo } = req.body
 
             const equipamento = AppDataSource.getRepository(Equipment)
 
@@ -69,6 +82,8 @@ class EquipmentController {
             obj.observacoes = observacoes
             obj.foto = foto
             obj.status = status
+            obj.tipo = tipo
+           
 
             await equipamento.save(obj)
             return res.json(obj)
