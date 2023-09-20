@@ -2,6 +2,8 @@ import AppDataSource from "../data-source";
 import { Request, Response } from 'express';
 import { User } from '../entities/User';
 import { ObjectID } from 'mongodb'
+import { validate } from 'class-validator';
+
 
 class UserController {
 
@@ -20,13 +22,17 @@ class UserController {
       obj.foto = foto
       obj.senha = senha
 
-      await AppDataSource.manager.save(User, obj)
+      const errors = await validate(obj)
+      if (errors.length === 0) {
+        await AppDataSource.manager.save(User, obj)
+        return res.json({ message: "Usuario cadastrado com sucesso" })
+      } else {
+        return res.json(errors)
 
-      return res.json({ message: "Usuario cadastrado com sucesso" })
-
+      }
     } catch (error) {
-      return res.json({ error: "Erro ao salvar o Usuario" })
 
+      return res.json({ error: error })
     }
   }
 
@@ -57,7 +63,7 @@ class UserController {
 
   async update(req: Request, res: Response): Promise<Response> {
     try {
-      const id = req.params.id; 
+      const id = req.params.id;
 
       const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha } = req.body
 
@@ -77,30 +83,34 @@ class UserController {
       obj.foto = foto
       obj.senha = senha
 
-      await usuario.save(obj)
-      return res.json(obj)
+      const errors = await validate(obj)
+      if (errors.length === 0) {
+        await usuario.save(obj)
+        return res.json(obj)
+      } else {
+        return res.json(errors)
+      }
 
     } catch (error) {
-      return res.json({ error: "Erro ao atualizar o Usuario" })
+      return res.json({ error: error })
     }
   }
 
 
-public async one(req: Request, res: Response): Promise<Response> {
-    const id = req.params.id; 
+  public async one(req: Request, res: Response): Promise<Response> {
+    const id = req.params.id;
 
     const userid = new ObjectID(id)
 
-
     try {
-        const usuario = await AppDataSource.getRepository(User).findOne(userid)
+      const usuario = await AppDataSource.getRepository(User).findOne(userid)
 
-        return res.json(usuario);
+      return res.json(usuario);
     } catch (error) {
-        console.error(error);
-        return res.json({ error: 'Erro ao buscar o Usuario' });
+      console.error(error);
+      return res.json({ error: 'Erro ao buscar o Usuario' });
     }
-}
+  }
 
 
 } export default new UserController();

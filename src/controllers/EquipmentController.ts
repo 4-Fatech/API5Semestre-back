@@ -2,6 +2,7 @@ import AppDataSource from "../data-source";
 import { Request, Response } from 'express';
 import { Equipment } from '../entities/Equipment';
 import { ObjectID } from 'mongodb'
+import { validate } from 'class-validator';
 
 
 class EquipmentController {
@@ -19,15 +20,19 @@ class EquipmentController {
             obj.status = status
             obj.tipo = tipo
 
-            await AppDataSource.manager.save(Equipment, obj)
-
-            return res.json({ message: "Equipamento cadastrado com sucesso" })
-
-        } catch (error) {
-            return res.json({ error: "Erro ao salvar o Equipamento" })
-
-        }
-    }
+            const errors = await validate(obj)
+            if (errors.length === 0) {
+                await AppDataSource.manager.save(Equipment, obj)
+                return res.json({ message: "Equipamento cadastrado com sucesso" })
+            } else {
+              return res.json(errors)
+      
+            }
+          } catch (error) {
+      
+            return res.json({ error: error })
+          }
+        }     
 
     async list(req: Request, res: Response): Promise<Response> {
         try {
@@ -53,7 +58,6 @@ class EquipmentController {
 
     async delete(req: Request, res: Response): Promise<Response> {
         try {
-            console.log("aaa")
             const { id } = req.body;
 
             const equipamento = AppDataSource.getRepository(Equipment)
@@ -83,13 +87,17 @@ class EquipmentController {
             obj.foto = foto
             obj.status = status
             obj.tipo = tipo
-           
 
-            await equipamento.save(obj)
-            return res.json(obj)
-
+            const errors = await validate(obj)
+            if (errors.length === 0) {
+                await equipamento.save(obj)
+                return res.json(obj)
+            }else{
+                return res.json(errors)
+            }
+        
         } catch (error) {
-            return res.json({ error: "Erro ao atualizar o Equipamento" })
+            return res.json({ error: error })
         }
     }
 
