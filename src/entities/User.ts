@@ -27,7 +27,7 @@ export class User {
     cpf: string
 
     @Column()
-    foto: string
+    foto: []
 
     @Column()
     senha: string
