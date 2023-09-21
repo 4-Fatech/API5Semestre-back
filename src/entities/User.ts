@@ -15,15 +15,15 @@ export class User {
     sobrenome: string
 
     @Column({ unique: true })
-    @IsEmail({}, { message: 'Para o Email é necessario @ e o .com' })
     @IsNotEmpty({ message: 'O Email é obrigatório ' })
+    @IsEmail({}, { message: 'Para o Email é necessario @ e o .com' })
     email: string
 
     @Column({ unique: true })
-    @IsNotEmpty({ message: 'O Telefone é celular ' })
+    @IsNotEmpty({ message: 'O Telefone é obrigatório ' })
     telefone1: string
 
-    @Column({ nullable: true })
+    @Column()
     telefone2: string
 
     @Column()
@@ -40,7 +40,6 @@ export class User {
     @Column()
     @IsNotEmpty({ message: 'O Senha é obrigatório ' })
     senha: string
-
 
 
 }
