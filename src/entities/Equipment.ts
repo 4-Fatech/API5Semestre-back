@@ -30,5 +30,5 @@ export class Equipment {
 
     @Column({ default: '1' })
     @IsNotEmpty({ message: 'O Status é obrigatório ' })
-    status: string
+    status: number
 }
