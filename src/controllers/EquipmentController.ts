@@ -9,16 +9,18 @@ class EquipmentController {
 
     async create(req: Request, res: Response): Promise<Response> {
         try {
-            const { serial, latitude, longitude, observacoes, foto, status, tipo } = req.body
+            const { serial, tipo, modelo, latitude, longitude, observacoes, foto, status } = req.body
 
             const obj = new Equipment()
             obj.serial = serial
+            obj.tipo = tipo
+            obj.modelo = modelo
             obj.latitude = latitude
             obj.longitude = longitude
             obj.observacoes = observacoes
             obj.foto = foto
             obj.status = status
-            obj.tipo = tipo
+            
 
             const errors = await validate(obj)
             if (errors.length === 0) {
@@ -74,20 +76,21 @@ class EquipmentController {
 
     async update(req: Request, res: Response): Promise<Response> {
         try {
-            const { id, serial, latitude, longitude, observacoes, foto, status, tipo, modelo } = req.body
+            const { id, serial, tipo, modelo, latitude, longitude, observacoes, foto, status } = req.body
 
             const equipamento = AppDataSource.getRepository(Equipment)
 
             const obj = await equipamento.findOne(id)
 
             obj.serial = serial
+            obj.tipo = tipo
+            obj.modelo = modelo
             obj.latitude = latitude
             obj.longitude = longitude
             obj.observacoes = observacoes
             obj.foto = foto
             obj.status = status
-            obj.tipo = tipo
-            obj.modelo = modelo
+           
 
             const errors = await validate(obj)
             if (errors.length === 0) {
