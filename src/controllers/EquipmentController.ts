@@ -74,7 +74,7 @@ class EquipmentController {
 
     async update(req: Request, res: Response): Promise<Response> {
         try {
-            const { id, serial, latitude, longitude, observacoes, foto, status, tipo } = req.body
+            const { id, serial, latitude, longitude, observacoes, foto, status, tipo, modelo } = req.body
 
             const equipamento = AppDataSource.getRepository(Equipment)
 
@@ -87,6 +87,7 @@ class EquipmentController {
             obj.foto = foto
             obj.status = status
             obj.tipo = tipo
+            obj.modelo = modelo
 
             const errors = await validate(obj)
             if (errors.length === 0) {
