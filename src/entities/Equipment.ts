@@ -15,6 +15,10 @@ export class Equipment {
     tipo: string
 
     @Column()
+    @IsNotEmpty({ message: 'O modelo é obrigatório ' })
+    modelo: string
+
+    @Column()
     @IsNotEmpty({ message: 'O Latitude é obrigatório ' })
     latitude: string
 
