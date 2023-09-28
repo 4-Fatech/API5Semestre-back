@@ -1,6 +1,6 @@
-import { Entity, Column,ObjectIdColumn, ObjectID,} from "typeorm"
+import { Entity, Column,ObjectIdColumn, ObjectID,BeforeInsert, BeforeUpdate} from "typeorm"
 import { IsEmail, IsNotEmpty} from "class-validator";
-
+import * as bcrypt from "bcrypt";
 @Entity()
 export class User {
     @ObjectIdColumn()
@@ -41,5 +41,10 @@ export class User {
     @IsNotEmpty({ message: 'O Senha é obrigatório ' })
     senha: string
 
+    @BeforeInsert()
+    @BeforeUpdate()
+    hashpassword() {
+        this.senha = bcrypt.hashSync(this.senha, 10);
+    }
 
 }
