@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { User } from '../entities/User';
 import { ObjectID } from 'mongodb'
 import { validate } from 'class-validator';
-
+import 'dotenv/config';
 
 class UserController {
 
@@ -64,7 +64,7 @@ class UserController {
   async update(req: Request, res: Response): Promise<Response> {
     try {
       const id = req.params.id;
-
+      
       const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha } = req.body
 
       const userid = new ObjectID(id)
@@ -111,6 +111,61 @@ class UserController {
       return res.json({ error: 'Erro ao buscar o Usuario' });
     }
   }
+
+  public async notEmail(req: Request, res: Response): Promise<Response> {
+    try {
+      const { email } = req.body
+  
+      const userRepository = AppDataSource.getRepository(User)
+      const user = await userRepository.findOne({ where: { email } })
+
+      if (!user) {
+        return res.json({ message: "Email não encontrado." })
+      }
+
+      const code = Math.floor(100000 + Math.random() * 900000)
+      
+
+      user.a2f = code
+      await userRepository.save(user)
+  
+      const conteudoEmail = {
+        service_id: `${process.env.SERVICE_ID}`,
+        template_id: `${process.env.TEMPLATE_ID}`,
+        user_id: `${process.env.PUBLIC_KEY}`,
+        template_params: {
+          email: email,
+          code: code
+        }
+      };
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify(conteudoEmail)
+      });
+  
+      if (response.ok) {
+        console.log('SUCCESS!', response.status, response.statusText);
+        return res.json({ message: 'Código de autenticação enviado com sucesso.' });
+      } else {
+        console.log('FAILED...', response.status, response.statusText);
+        return res.status(response.status).json({ error: 'Erro ao enviar o Código de autenticação ' });
+      }
+
+    } catch (error) {
+      return res.json({ error: error })
+    }
+  }
+
+
+
+  
+
+
+
+
 
 
 } export default new UserController();

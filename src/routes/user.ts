@@ -8,6 +8,7 @@ routes.get("/list", UserController.list);
 routes.delete("/delete", UserController.delete);
 routes.patch("/update/:id", UserController.update);
 routes.get("/list/:id", UserController.one);
+routes.put("/notEmail", UserController.notEmail);
 
 
 

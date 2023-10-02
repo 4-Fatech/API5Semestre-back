@@ -41,10 +41,15 @@ export class User {
     @IsNotEmpty({ message: 'O Senha é obrigatório ' })
     senha: string
 
+    @Column()
+    a2f : number
+
     @BeforeInsert()
     @BeforeUpdate()
     hashpassword() {
         this.senha = bcrypt.hashSync(this.senha, 10);
+
     }
+
 
 }
