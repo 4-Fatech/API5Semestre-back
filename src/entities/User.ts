@@ -42,13 +42,15 @@ export class User {
     senha: string
 
     @Column()
-    a2f : string
+    a2f : string | null
 
     @BeforeInsert()
     @BeforeUpdate()
     hashpassword() {
         this.senha = bcrypt.hashSync(this.senha, 10);
-        this.a2f = bcrypt.hashSync(this.a2f, 10);
+        if (this.a2f) {
+            this.a2f = bcrypt.hashSync(this.a2f, 10);
+        }
     }
 
 

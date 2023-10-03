@@ -5,7 +5,7 @@ import { ObjectID } from 'mongodb'
 import { validate } from 'class-validator';
 import 'dotenv/config';
 import * as bcrypt from "bcrypt";
-import { generateToken } from "../middlewares";
+
 
 class UserController {
 
