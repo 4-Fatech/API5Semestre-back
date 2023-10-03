@@ -9,7 +9,7 @@ routes.delete("/delete", UserController.delete);
 routes.patch("/update/:id", UserController.update);
 routes.get("/list/:id", UserController.one);
 routes.put("/notEmail", UserController.notEmail);
-
+routes.put("/valNotEmail", UserController.valNotEmail);
 
 
 export default routes;

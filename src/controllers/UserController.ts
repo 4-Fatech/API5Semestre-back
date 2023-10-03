@@ -5,6 +5,7 @@ import { ObjectID } from 'mongodb'
 import { validate } from 'class-validator';
 import 'dotenv/config';
 
+
 class UserController {
 
   async create(req: Request, res: Response): Promise<Response> {
@@ -159,7 +160,36 @@ class UserController {
     }
   }
 
+  public async valNotEmail(req: Request, res: Response): Promise<Response> {
+    try {
+      const { email, code, senha} = req.body
+  
+      const userRepository = AppDataSource.getRepository(User)
+      const user = await userRepository.findOne({ where: { email } })
 
+      if (!user) {
+        return res.json({ message: "Email não encontrado." })
+      }
+      if (!code) {
+        return res.json({ message: "Codigo não encontrado." })
+      }
+
+      if (user.a2f !== code ){
+        return res.json({ message: "Codigo incorreto." })
+
+      }
+
+      user.senha = senha; 
+
+      await userRepository.save(user);
+  
+      return res.json({ message: "Senha redefinida com sucesso." });
+
+    } catch (error) {
+      return res.json({ error: error })
+
+    }
+  }
 
   
 
