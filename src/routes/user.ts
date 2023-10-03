@@ -9,8 +9,8 @@ routes.delete("/delete", UserController.delete);
 routes.patch("/update/:id", UserController.update);
 routes.get("/list/:id", UserController.one);
 routes.put("/notEmail", UserController.notEmail);
-routes.put("/valNotEmail", UserController.valNotEmail);
-
+routes.put("/notSms", UserController.notSms);
+routes.put("/valNot", UserController.valNot);
 
 export default routes;
 

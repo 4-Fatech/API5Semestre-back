@@ -6,6 +6,7 @@ import { validate } from 'class-validator';
 import 'dotenv/config';
 
 
+
 class UserController {
 
   async create(req: Request, res: Response): Promise<Response> {
@@ -65,7 +66,7 @@ class UserController {
   async update(req: Request, res: Response): Promise<Response> {
     try {
       const id = req.params.id;
-      
+
       const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha } = req.body
 
       const userid = new ObjectID(id)
@@ -116,7 +117,7 @@ class UserController {
   public async notEmail(req: Request, res: Response): Promise<Response> {
     try {
       const { email } = req.body
-  
+
       const userRepository = AppDataSource.getRepository(User)
       const user = await userRepository.findOne({ where: { email } })
 
@@ -125,11 +126,11 @@ class UserController {
       }
 
       const code = Math.floor(100000 + Math.random() * 900000)
-      
+
 
       user.a2f = code
       await userRepository.save(user)
-  
+
       const conteudoEmail = {
         service_id: `${process.env.SERVICE_ID}`,
         template_id: `${process.env.TEMPLATE_ID}`,
@@ -146,7 +147,7 @@ class UserController {
         },
         body: JSON.stringify(conteudoEmail)
       });
-  
+
       if (response.ok) {
         console.log('SUCCESS!', response.status, response.statusText);
         return res.json({ message: 'Código de autenticação enviado com sucesso.' });
@@ -160,29 +161,63 @@ class UserController {
     }
   }
 
-  public async valNotEmail(req: Request, res: Response): Promise<Response> {
+  public async notSms(req: Request, res: Response): Promise<Response> {
     try {
-      const { email, code, senha} = req.body
-  
+      const { telefone1 } = req.body
+
       const userRepository = AppDataSource.getRepository(User)
-      const user = await userRepository.findOne({ where: { email } })
+      const user = await userRepository.findOne({ where: { telefone1 } })
 
       if (!user) {
-        return res.json({ message: "Email não encontrado." })
+        return res.json({ message: "Telefone não regristrado." })
+      }
+
+      const code = Math.floor(100000 + Math.random() * 900000)
+
+      user.a2f = code
+      await userRepository.save(user)
+
+      const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+      client.messages
+        .create({
+          body: `Imagem - Seu código de verificação é:${code}`,
+          from: `${process.env.TWILIO_PHONE_NUMBER}`,
+          to: `${telefone1}`
+        })
+        .then(message => console.log(message.sid));
+        return res.json({ message: 'Código de autenticação enviado com sucesso.' });
+
+    } catch (error) {
+      return res.json({ error: error })
+    }
+  }
+
+  public async valNot(req: Request, res: Response): Promise<Response> {
+    try {
+      const { email, telefone1, code, senha } = req.body
+
+      const cond = email ? { email } : { telefone1 };
+
+      const userRepository = AppDataSource.getRepository(User)
+      const user = await userRepository.findOne({ where: cond });
+  
+      if (!user) {
+        return res.json({ message: "Precisa conter o Email ou o Telefone. " })
       }
       if (!code) {
         return res.json({ message: "Codigo não encontrado." })
       }
 
-      if (user.a2f !== code ){
+      if (user.a2f !== code) {
         return res.json({ message: "Codigo incorreto." })
 
       }
 
-      user.senha = senha; 
+      user.senha = senha;
 
       await userRepository.save(user);
-  
+
       return res.json({ message: "Senha redefinida com sucesso." });
 
     } catch (error) {
@@ -190,12 +225,5 @@ class UserController {
 
     }
   }
-
-  
-
-
-
-
-
 
 } export default new UserController();
