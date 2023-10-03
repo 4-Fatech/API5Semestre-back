@@ -4,8 +4,8 @@ import { User } from '../entities/User';
 import { ObjectID } from 'mongodb'
 import { validate } from 'class-validator';
 import 'dotenv/config';
-
-
+import * as bcrypt from "bcrypt";
+import { generateToken } from "../middlewares";
 
 class UserController {
 
@@ -128,7 +128,8 @@ class UserController {
       const code = Math.floor(100000 + Math.random() * 900000)
 
 
-      user.a2f = code
+      user.a2f = code.toString()
+
       await userRepository.save(user)
 
       const conteudoEmail = {
@@ -174,7 +175,8 @@ class UserController {
 
       const code = Math.floor(100000 + Math.random() * 900000)
 
-      user.a2f = code
+      user.a2f  = code.toString()
+
       await userRepository.save(user)
 
       const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
@@ -209,9 +211,15 @@ class UserController {
         return res.json({ message: "Codigo não encontrado." })
       }
 
-      if (user.a2f !== code) {
-        return res.json({ message: "Codigo incorreto." })
+      // if (user.a2f !== code) {
+      //   return res.json({ message: "Codigo incorreto." })
 
+      // }
+
+      const valid = await bcrypt.compare(code, user.a2f); 
+
+      if (!valid){
+        return res.json({ message: "Codigo incorreto." })
       }
 
       user.senha = senha;
