@@ -67,7 +67,11 @@ class UserController {
     try {
       const id = req.params.id;
 
-      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha } = req.body
+      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha} = req.body
+
+      if (senha) {
+        return res.json({ error: "Não pode conter senha. " })
+      }
 
       const userid = new ObjectID(id)
 
@@ -83,7 +87,6 @@ class UserController {
       obj.matricula = matricula
       obj.cpf = cpf
       obj.foto = foto
-      obj.senha = senha
 
       const errors = await validate(obj)
       if (errors.length === 0) {
@@ -126,7 +129,7 @@ class UserController {
       }
 
       const code = Math.floor(100000 + Math.random() * 900000)
-      console.log(code)
+      // console.log(code)
 
 
       user.a2f = code.toString()
@@ -215,23 +218,12 @@ class UserController {
       if (!code) {
         return res.json({ error: "Codigo não encontrado." })
       }
-
-      // if (user.a2f !== code) {
-      //   return res.json({ message: "Codigo incorreto." })
-
-      // }
-
       const valid = await bcrypt.compare(code, user.a2f); 
 
 
       if (!valid){
         return res.json({ error: "Codigo incorreto." })
       }
-
-      // user.senha = senha;
-
-      // await userRepository.save(user);
-
       return res.json({ message: "Código Válido." });
 
     } catch (error) {
