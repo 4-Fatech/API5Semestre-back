@@ -11,7 +11,7 @@ routes.get("/list/:id", UserController.one);
 routes.put("/notEmail", UserController.notEmail);
 routes.put("/notSms", UserController.notSms);
 routes.put("/valNot", UserController.valNot);
-
+routes.put("/atualizarSenha", UserController.atualizarSenha);
 export default routes;
 
 

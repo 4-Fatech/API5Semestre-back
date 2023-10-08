@@ -126,6 +126,7 @@ class UserController {
       }
 
       const code = Math.floor(100000 + Math.random() * 900000)
+      console.log(code)
 
 
       user.a2f = code.toString()
@@ -168,12 +169,14 @@ class UserController {
 
       const userRepository = AppDataSource.getRepository(User)
       const user = await userRepository.findOne({ where: { telefone1 } })
+      console.log(user)
 
       if (!user) {
         return res.json({ message: "Telefone não regristrado." })
       }
 
       const code = Math.floor(100000 + Math.random() * 900000)
+      console.log(code)
 
       user.a2f  = code.toString()
 
@@ -191,24 +194,26 @@ class UserController {
         return res.json({ message: 'Código de autenticação enviado com sucesso.' });
 
     } catch (error) {
+      console.log(error)
       return res.json({ error: error })
     }
   }
 
   public async valNot(req: Request, res: Response): Promise<Response> {
     try {
-      const { email, telefone1, code, senha } = req.body
+      const { email, telefone1, code } = req.body
 
       const cond = email ? { email } : { telefone1 };
+      
 
       const userRepository = AppDataSource.getRepository(User)
       const user = await userRepository.findOne({ where: cond });
   
       if (!user) {
-        return res.json({ message: "Precisa conter o Email ou o Telefone. " })
+        return res.json({ error: "Precisa conter o Email ou o Telefone. " })
       }
       if (!code) {
-        return res.json({ message: "Codigo não encontrado." })
+        return res.json({ error: "Codigo não encontrado." })
       }
 
       // if (user.a2f !== code) {
@@ -218,15 +223,41 @@ class UserController {
 
       const valid = await bcrypt.compare(code, user.a2f); 
 
+
       if (!valid){
-        return res.json({ message: "Codigo incorreto." })
+        return res.json({ error: "Codigo incorreto." })
       }
 
+      // user.senha = senha;
+
+      // await userRepository.save(user);
+
+      return res.json({ message: "Código Válido." });
+
+    } catch (error) {
+      return res.json({ error: error })
+
+    }
+  }
+  public async atualizarSenha(req: Request, res: Response): Promise<Response> {
+    try {
+      const { email, telefone1, senha } = req.body
+
+      const cond = email ? { email } : { telefone1 };
+      
+
+      const userRepository = AppDataSource.getRepository(User)
+      const user = await userRepository.findOne({ where: cond });
+  
+      if (!user) {
+        return res.json({ error: "Erro ao atualizar senha. " })
+      }
+      
       user.senha = senha;
 
       await userRepository.save(user);
 
-      return res.json({ message: "Senha redefinida com sucesso." });
+      return res.json({ message: "Senha atualizada com sucesso!." });
 
     } catch (error) {
       return res.json({ error: error })
