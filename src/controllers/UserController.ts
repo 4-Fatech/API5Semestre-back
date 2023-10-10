@@ -125,7 +125,7 @@ class UserController {
       const user = await userRepository.findOne({ where: { email } })
 
       if (!user) {
-        return res.json({ message: "Email não encontrado." })
+        return res.json({ error: "Email não encontrado." })
       }
 
       const code = Math.floor(100000 + Math.random() * 900000)
