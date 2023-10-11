@@ -3,7 +3,7 @@ import 'dotenv/config';
 
   const AppDataSource = new DataSource({
     type: "mongodb", 
-    url: `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@${process.env.CLUSTER}.j50t7ao.mongodb.net/${process.env.DATABASE}?retryWrites=true&w=majority`,
+    url: `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@${process.env.CLUSTER}.${process.env.CODE}.mongodb.net/${process.env.DATABASE}?retryWrites=true&w=majority`,
     synchronize: true, 
     logging: true, 
     entities: ["src/entities/*.ts"], 
