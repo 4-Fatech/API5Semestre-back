@@ -22,7 +22,7 @@ class LoginController {
                 // Se a senha estiver correta, gerar um JWT e enviá-lo na resposta
                 const token = await generateToken({ email });
                 res.cookie("jwt", token);
-                return res.json({ success: true, token });
+                return res.json({ success: true, token , user: user});
             } else {
                 // Se a senha estiver incorreta, retornar uma mensagem de erro
                 return res.status(401).json({ error: "senhaIncorreta" });

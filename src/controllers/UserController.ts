@@ -69,9 +69,6 @@ class UserController {
 
       const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha} = req.body
 
-      if (senha) {
-        return res.json({ error: "Não pode conter senha. " })
-      }
 
       const userid = new ObjectID(id)
 
@@ -100,6 +97,44 @@ class UserController {
       return res.json({ error: error })
     }
   }
+
+  async updatePerfil(req: Request, res: Response): Promise<Response> {
+    try {
+      const id = req.params.id;
+
+      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha} = req.body
+
+    
+
+      const userid = new ObjectID(id)
+
+      const usuario = AppDataSource.getRepository(User)
+
+      const obj = await usuario.findOne(userid)
+
+      obj.nome = nome
+      obj.sobrenome = sobrenome
+      obj.email = email
+      obj.telefone1 = telefone1
+      obj.telefone2 = telefone2
+      obj.matricula = matricula
+      obj.cpf = cpf
+      obj.foto = foto
+      obj.senha = senha
+
+      const errors = await validate(obj)
+      if (errors.length === 0) {
+        await usuario.save(obj)
+        return res.json(obj)
+      } else {
+        return res.json(errors)
+      }
+
+    } catch (error) {
+      return res.json({ error: error })
+    }
+  }
+
 
 
   public async one(req: Request, res: Response): Promise<Response> {
