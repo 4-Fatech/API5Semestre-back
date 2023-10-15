@@ -210,7 +210,7 @@ class UserController {
       console.log(user)
 
       if (!user) {
-        return res.json({ message: "Telefone não regristrado." })
+        return res.json({ error: "Telefone não regristrado." })
       }
 
       const code = Math.floor(100000 + Math.random() * 900000)
