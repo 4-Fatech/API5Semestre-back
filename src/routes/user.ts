@@ -13,6 +13,8 @@ routes.put("/notSms", UserController.notSms);
 routes.put("/valNot", UserController.valNot);
 routes.put("/atualizarSenha", UserController.atualizarSenha);
 routes.patch("/updatePerfil/:id", UserController.updatePerfil);
+routes.get("/keepUserLoggedIn", UserController.keepUserLoggedIn);
+
 export default routes;
 
 

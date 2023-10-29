@@ -5,9 +5,35 @@ import { ObjectID } from 'mongodb'
 import { validate } from 'class-validator';
 import 'dotenv/config';
 import * as bcrypt from "bcrypt";
-
+import { verify, sign } from 'jsonwebtoken';
 
 class UserController {
+  async keepUserLoggedIn(req: Request, res: Response) {
+    try {
+      const token = req.cookies.jwt;
+
+      if (!token) {
+        return res.status(401).json({ error: 'Token não fornecido' });
+      }
+
+      
+      verify(token, '@tokenJWT', (err, decoded) => {
+        if (err) {
+          return res.status(401).json({ error: 'Token inválido' });
+        }
+
+        
+        const newToken = sign(decoded, '@tokenJWT', { expiresIn: '1h' });
+
+        
+        res.cookie('jwt', newToken);
+
+        return res.json({ success: true, token: newToken });
+      });
+    } catch (error) {
+      return res.status(500).json({ error: 'Erro ao manter o usuário logado' });
+    }
+  }
 
   async create(req: Request, res: Response): Promise<Response> {
     try {
