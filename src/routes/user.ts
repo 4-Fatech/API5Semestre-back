@@ -14,6 +14,9 @@ routes.put("/notSms",authorization, UserController.notSms);
 routes.put("/valNot",authorization, UserController.valNot);
 routes.put("/atualizarSenha",authorization, UserController.atualizarSenha);
 routes.patch("/updatePerfil/:id",authorization, UserController.updatePerfil);
+
+routes.get("/keepUserLoggedIn", UserController.keepUserLoggedIn);
+
 export default routes;
 
 
