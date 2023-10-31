@@ -44,6 +44,9 @@ export class User {
     @Column()
     a2f : string | null
 
+    @Column()
+    profile: string;
+
     @BeforeInsert()
     @BeforeUpdate()
     hashpassword() {

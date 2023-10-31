@@ -6,6 +6,7 @@ import { validate } from 'class-validator';
 import 'dotenv/config';
 import * as bcrypt from "bcrypt";
 import { verify, sign } from 'jsonwebtoken';
+import { authAdmin } from "../middlewares";
 
 
 class UserController {
@@ -38,92 +39,122 @@ class UserController {
 
   async create(req: Request, res: Response): Promise<Response> {
     try {
-      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha } = req.body
+        const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha, profile } = req.body;
 
-      const obj = new User()
-      obj.nome = nome
-      obj.sobrenome = sobrenome
-      obj.email = email
-      obj.telefone1 = telefone1
-      obj.telefone2 = telefone2
-      obj.matricula = matricula
-      obj.cpf = cpf
-      obj.foto = foto
-      obj.senha = senha
+        // Use o middleware authAdmin para verificar se o usuário é um administrador
+        authAdmin(req, res, async (error) => { // Marque a função como async
+            if (error) {
+                return res.status(401).json({ error: "Apenas administradores podem criar usuários." });
+            }
 
-      const errors = await validate(obj)
-      if (errors.length === 0) {
-        await AppDataSource.manager.save(User, obj)
-        return res.json({ message: "Usuario cadastrado com sucesso" })
-      } else {
-        return res.json(errors)
+            const obj = new User();
+            obj.nome = nome;
+            obj.sobrenome = sobrenome;
+            obj.email = email;
+            obj.telefone1 = telefone1;
+            obj.telefone2 = telefone2;
+            obj.matricula = matricula;
+            obj.cpf = cpf;
+            obj.foto = foto;
+            obj.senha = senha;
+            obj.profile = profile;
 
-      }
+            const errors = await validate(obj);
+            if (errors.length === 0) {
+                await AppDataSource.manager.save(User, obj);
+                return res.json({ message: "Usuário cadastrado com sucesso" });
+            } else {
+                return res.json(errors);
+            }
+        });
     } catch (error) {
-
-      return res.json({ error: error })
+        return res.json({ error: error });
     }
+}
+
+async list(req: Request, res: Response): Promise<Response> {
+  try {
+      // Use a middleware de autenticação de administrador para verificar se o usuário é um administrador
+      authAdmin(req, res, async (adminError) => {
+          if (adminError) {
+              return res.status(401).json({ error: "Apenas administradores podem listar usuários" });
+          }
+
+          // Se chegou até aqui, o usuário é um administrador
+          const usuarios = await AppDataSource.getRepository(User).find();
+          return res.json(usuarios);
+      });
+  } catch (error) {
+      return res.json({ error: "Erro ao listar os usuários" });
   }
+}
 
-  async list(req: Request, res: Response): Promise<Response> {
-    try {
-      const usuarios = await AppDataSource.getRepository(User).find()
-      return res.json(usuarios)
+async delete(req: Request, res: Response): Promise<Response> {
+  try {
+      // Use a middleware de autenticação de administrador para verificar se o usuário é um administrador
+      authAdmin(req, res, async (adminError) => {
+          if (adminError) {
+              return res.status(401).json({ error: "Apenas administradores podem remover usuários" });
+          }
 
-    } catch (error) {
-      return res.json({ error: "Erro ao listar os Usuarios" })
-    }
+          const { id } = req.body;
+          const user = AppDataSource.getRepository(User);
+          const remove = await user.findOne(id);
+
+          if (!remove) {
+              return res.status(404).json({ error: "Usuário não encontrado" });
+          }
+
+          await user.remove(remove);
+          return res.json({ message: "Usuário removido com sucesso" });
+      });
+  } catch (error) {
+      return res.json({ error: "Erro ao deletar o usuário" });
   }
+}
 
-  async delete(req: Request, res: Response): Promise<Response> {
-    try {
-      const { id } = req.body
 
-      const user = AppDataSource.getRepository(User)
-      const remove = await user.findOne(id)
-      await user.remove(remove)
+async update(req: Request, res: Response): Promise<Response> {
+  try {
+      // Use a middleware de autenticação de administrador para verificar se o usuário é um administrador
+      authAdmin(req, res, async (adminError) => {
+          if (adminError) {
+              return res.status(401).json({ error: "Apenas administradores podem atualizar informações de usuários" });
+          }
 
-      return res.json({ message: "Usuario removido com sucesso" })
+          const id = req.params.id;
+          const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, profile } = req.body;
 
-    } catch (error) {
-      return res.json({ error: "Erro ao deletar o Usuario" })
-    }
+          const userid = new ObjectID(id);
+          const usuario = AppDataSource.getRepository(User);
+          const obj = await usuario.findOne(userid);
+
+          if (!obj) {
+              return res.status(404).json({ error: "Usuário não encontrado" });
+          }
+
+          obj.nome = nome;
+          obj.sobrenome = sobrenome;
+          obj.email = email;
+          obj.telefone1 = telefone1;
+          obj.telefone2 = telefone2;
+          obj.matricula = matricula;
+          obj.cpf = cpf;
+          obj.foto = foto;
+          obj.profile = profile;
+
+          const errors = await validate(obj);
+          if (errors.length === 0) {
+              await usuario.save(obj);
+              return res.json(obj);
+          } else {
+              return res.json(errors);
+          }
+      });
+  } catch (error) {
+      return res.json({ error: "Erro ao atualizar as informações do usuário" });
   }
-
-  async update(req: Request, res: Response): Promise<Response> {
-    try {
-      const id = req.params.id;
-
-      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha} = req.body
-
-
-      const userid = new ObjectID(id)
-
-      const usuario = AppDataSource.getRepository(User)
-
-      const obj = await usuario.findOne(userid)
-
-      obj.nome = nome
-      obj.sobrenome = sobrenome
-      obj.email = email
-      obj.telefone1 = telefone1
-      obj.telefone2 = telefone2
-      obj.matricula = matricula
-      obj.cpf = cpf
-      obj.foto = foto
-
-      const errors = await validate(obj)
-      if (errors.length === 0) {
-        await usuario.save(obj)
-        return res.json(obj)
-      } else {
-        return res.json(errors)
-      }
-
-    } catch (error) {
-      return res.json({ error: error })
-    }
-  }
+}
 
   async updatePerfil(req: Request, res: Response): Promise<Response> {
     try {

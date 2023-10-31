@@ -19,10 +19,15 @@ class LoginController {
             const isPasswordValid = await bcrypt.compare(senha, user.senha);
 
             if (isPasswordValid) {
-                // Se a senha estiver correta, gerar um JWT e enviá-lo na resposta
-                const token = await generateToken({ email });
+                // Verificar se o perfil do usuário é "admin" e definir o perfil como "admin"
+                if (user.profile === "admin") {
+                    user.profile = "admin";
+                }
+
+                // Gerar um JWT e enviá-lo na resposta
+                const token = await generateToken({ email: user.email, profile: user.profile });
                 res.cookie("jwt", token);
-                return res.json({ success: true, token , user: user});
+                return res.json({ success: true, token, user: user });
             } else {
                 // Se a senha estiver incorreta, retornar uma mensagem de erro
                 return res.status(401).json({ error: "senhaIncorreta" });
