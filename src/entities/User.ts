@@ -42,6 +42,9 @@ export class User {
     senha: string
 
     @Column()
+    profile: string;
+
+    @Column()
     a2f : string | null
 
     @BeforeInsert()

@@ -37,7 +37,7 @@ class UserController {
 
   async create(req: Request, res: Response): Promise<Response> {
     try {
-      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha } = req.body
+      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha, profile } = req.body
 
       const obj = new User()
       obj.nome = nome
@@ -49,6 +49,7 @@ class UserController {
       obj.cpf = cpf
       obj.foto = foto
       obj.senha = senha
+      obj.profile = profile
 
       const errors = await validate(obj)
       if (errors.length === 0) {
@@ -93,7 +94,7 @@ class UserController {
     try {
       const id = req.params.id;
 
-      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha} = req.body
+      const { nome, sobrenome, email, telefone1, telefone2, matricula, cpf, foto, senha, profile} = req.body
 
 
       const userid = new ObjectID(id)
@@ -110,6 +111,7 @@ class UserController {
       obj.matricula = matricula
       obj.cpf = cpf
       obj.foto = foto
+      obj.profile = profile
 
       const errors = await validate(obj)
       if (errors.length === 0) {
