@@ -16,4 +16,7 @@ export class Log {
 
     @Column()
     userEmail: string
+
+    @Column()
+    details: string[]
 }

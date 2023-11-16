@@ -5,12 +5,13 @@ import { ObjectID } from 'mongodb'
 import { validate } from 'class-validator';
 import { Log } from "../entities/Log"
 
-export async function createEquipmentLog(action: string, userEmail?: string, equipmentId?: string): Promise<void> {
+export async function createEquipmentLog(action: string, userEmail?: string, equipmentId?: string, details?: string[]): Promise<void> {
     const log = new Log();
     log.date = new Date();
     log.action = action;
     log.equipmentId = equipmentId;
     log.userEmail = userEmail || null;
+    log.details = details || null;
 
     await AppDataSource.manager.save(Log, log);
 }
@@ -99,6 +100,8 @@ class EquipmentController {
 
             const obj = await equipamento.findOne(id)
 
+            const old = { ...obj };
+
             obj.serial = serial
             obj.tipo = tipo
             obj.modelo = modelo
@@ -114,7 +117,17 @@ class EquipmentController {
                 await equipamento.save(obj)
 
                 const userEmail = res.locals.email
-                await createEquipmentLog('Update', userEmail, obj.id.toHexString());
+                const details: string[] = [];
+
+                for (const [column, value] of Object.entries(obj)) {
+                    if (old[column] !== value) {
+                        const formattedColumn = column.charAt(0).toUpperCase() + column.slice(1);
+                        details.push(`${formattedColumn}: ${old[column]} => ${value}`);
+                    }
+                }
+
+
+                await createEquipmentLog(`Update`, userEmail, obj.id.toHexString(), details);
 
 
                 return res.json(obj)
@@ -133,16 +146,16 @@ class EquipmentController {
             const { id } = req.body;
 
             const equipmentId = id;
-    
+
             if (!equipmentId) {
                 return res.json({ error: "ID do Equipamento Não Fornecido." });
             }
-    
+
             const logs = await AppDataSource.getRepository(Log).find({
                 where: { equipmentId },
                 order: { date: 'ASC' },
             });
-    
+
             return res.json(logs);
         } catch (error) {
             return res.json({ error: error.message });
