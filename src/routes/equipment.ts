@@ -9,6 +9,7 @@ routes.get("/list",authorization , EquipmentController.list);
 routes.get("/get/:id",authorization , EquipmentController.one);
 routes.post("/delete",authorization , EquipmentController.delete);
 routes.patch("/update",authorization , EquipmentController.update);
+routes.get("/getLogs",authorization , EquipmentController.getLogs);
 
 
 export default routes;

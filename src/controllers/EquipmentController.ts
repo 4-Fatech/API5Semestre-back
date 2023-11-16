@@ -3,27 +3,19 @@ import { Request, Response } from 'express';
 import { Equipment } from '../entities/Equipment';
 import { ObjectID } from 'mongodb'
 import { validate } from 'class-validator';
-// import { Log } from "../entities/Log"
-import { User } from "../entities/User";
-import * as bcrypt from "bcrypt";
+import { Log } from "../entities/Log"
+
+export async function createEquipmentLog(action: string, userEmail?: string, equipmentId?: string): Promise<void> {
+    const log = new Log();
+    log.date = new Date();
+    log.action = action;
+    log.equipmentId = equipmentId;
+    log.userEmail = userEmail || null;
+
+    await AppDataSource.manager.save(Log, log);
+}
+
 class EquipmentController {
-
-    // async createLog(req: Request, action: string, value: string, equipment: Equipment, userEmail: string): Promise<void> {
-
-    //     const email = req.cookies.email;
-
-    //     await AppDataSource.getRepository(User).findOne({ where: { email: email.toString() } });
-
-    //     const log = new Log();
-    //     log.date = new Date();
-    //     log.action = action;
-    //     log.value = value;
-    //     log.equipmentId = equipment.id;
-    //     log.userEmail = email;
-
-
-    //     await AppDataSource.manager.save(Log, log);
-    // }
 
     async create(req: Request, res: Response): Promise<Response> {
         try {
@@ -39,15 +31,14 @@ class EquipmentController {
             obj.foto = foto
             obj.status = status
 
-
             const errors = await validate(obj)
-
-
-            // await this.createLog(req, 'create', `Equipamento criado: ${obj.serial}`, obj, 'user@example.com');
-
 
             if (errors.length === 0) {
                 await AppDataSource.manager.save(Equipment, obj)
+
+                const userEmail = res.locals.email
+                await createEquipmentLog('Create', userEmail, obj.id.toHexString());
+
                 return res.json({ message: "Equipamento cadastrado com sucesso" })
             } else {
                 return res.json(errors)
@@ -90,6 +81,9 @@ class EquipmentController {
             const remove = await equipamento.findOne(id);
             await equipamento.remove(remove);
 
+            const userEmail = res.locals.email
+            await createEquipmentLog('Delete', userEmail, id);
+
             return res.json({ message: "Equipamento removido com sucesso" })
 
         } catch (error) {
@@ -118,6 +112,11 @@ class EquipmentController {
             const errors = await validate(obj)
             if (errors.length === 0) {
                 await equipamento.save(obj)
+
+                const userEmail = res.locals.email
+                await createEquipmentLog('Update', userEmail, obj.id.toHexString());
+
+
                 return res.json(obj)
             } else {
                 return res.json(errors)
@@ -125,6 +124,28 @@ class EquipmentController {
 
         } catch (error) {
             return res.json({ error: error })
+        }
+    }
+
+
+    async getLogs(req: Request, res: Response): Promise<Response> {
+        try {
+            const { id } = req.body;
+
+            const equipmentId = id;
+    
+            if (!equipmentId) {
+                return res.json({ error: "ID do Equipamento Não Fornecido." });
+            }
+    
+            const logs = await AppDataSource.getRepository(Log).find({
+                where: { equipmentId },
+                order: { date: 'ASC' },
+            });
+    
+            return res.json(logs);
+        } catch (error) {
+            return res.json({ error: error.message });
         }
     }
 
