@@ -13,7 +13,8 @@ export async function createEquipmentLog(action: string, userEmail?: string, equ
     log.userEmail = userEmail || null;
     log.details = details || null;
 
-    await AppDataSource.manager.save(Log, log);
+    const newLog: any = await AppDataSource.manager.save(Log, log).catch((e) => { console.log(e) })
+    return newLog;
 }
 
 class EquipmentController {
@@ -122,14 +123,16 @@ class EquipmentController {
                 for (const [column, value] of Object.entries(obj)) {
                     if (old[column] !== value) {
                         const formattedColumn = column.charAt(0).toUpperCase() + column.slice(1);
-                        details.push(`${formattedColumn}: ${old[column]} => ${value}`);
+                        if (column === 'foto') {
+                            details.push('Foto Atualizada');
+                        } else {
+                            details.push(`${formattedColumn}: ${old[column]} => ${value}`);
+                        }
                     }
                 }
-
-
-                await createEquipmentLog(`Update`, userEmail, obj.id.toHexString(), details);
-
-
+                if (details.length > 0) {
+                    await createEquipmentLog('Update', userEmail, obj.id.toHexString(), details);
+                }
                 return res.json(obj)
             } else {
                 return res.json(errors)
@@ -143,11 +146,11 @@ class EquipmentController {
 
     async getLogs(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = req.body;
+            const { id } = req.params;
 
             const equipmentId = id;
 
-            if (!equipmentId) {
+            if (!id) {
                 return res.json({ error: "ID do Equipamento Não Fornecido." });
             }
 
