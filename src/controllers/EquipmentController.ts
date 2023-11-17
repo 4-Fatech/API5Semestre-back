@@ -95,53 +95,66 @@ class EquipmentController {
 
     async update(req: Request, res: Response): Promise<Response> {
         try {
-            const { id, serial, tipo, modelo, latitude, longitude, observacoes, foto, status } = req.body
+            const { id, serial, tipo, modelo, latitude, longitude, observacoes, foto, status } = req.body;
 
-            const equipamento = AppDataSource.getRepository(Equipment)
-
-            const obj = await equipamento.findOne(id)
-
+            const equipamento = AppDataSource.getRepository(Equipment);
+            const obj = await equipamento.findOne(id);
             const old = { ...obj };
 
-            obj.serial = serial
-            obj.tipo = tipo
-            obj.modelo = modelo
-            obj.latitude = latitude
-            obj.longitude = longitude
-            obj.observacoes = observacoes
-            obj.foto = foto
-            obj.status = status
+            obj.serial = serial;
+            obj.tipo = tipo;
+            obj.modelo = modelo;
+            obj.latitude = latitude;
+            obj.longitude = longitude;
+            obj.observacoes = observacoes;
+            obj.foto = foto;
+            obj.status = status;
 
+            const errors = await validate(obj);
 
-            const errors = await validate(obj)
             if (errors.length === 0) {
-                await equipamento.save(obj)
+                await equipamento.save(obj);
 
-                const userEmail = res.locals.email
+                const userEmail = res.locals.email;
                 const details: string[] = [];
 
-                for (const [column, value] of Object.entries(obj)) {
-                    if (old[column] !== value) {
-                        const formattedColumn = column.charAt(0).toUpperCase() + column.slice(1);
-                        if (column === 'foto') {
-                            details.push('Foto Atualizada');
-                        } else {
-                            details.push(`${formattedColumn}: ${old[column]} => ${value}`);
+                let logTitle = '';
+                let logDetail = '';
+
+                if (old.status === 0 && obj.status === 1) {
+                    logTitle = 'Ativado';
+                    logDetail = 'Equipamento ativado';
+                } else if (old.status === 1 && obj.status === 0) {
+                    logTitle = 'Desativado';
+                    logDetail = 'Equipamento inativo';
+                } else {
+                    for (const [column, value] of Object.entries(obj)) {
+                        if (old[column] !== value) {
+                            const formattedColumn = column.charAt(0).toUpperCase() + column.slice(1);
+                            if (column === 'foto') {
+                                details.push('Foto Atualizada');
+                            } else {
+                                details.push(`${formattedColumn}: ${old[column]} => ${value}`);
+                            }
                         }
                     }
                 }
-                if (details.length > 0) {
+
+                if (logTitle && logDetail) {
+                    await createEquipmentLog(logTitle, userEmail, obj.id.toHexString(), [logDetail]);
+                } else if (details.length > 0) {
                     await createEquipmentLog('Update', userEmail, obj.id.toHexString(), details);
                 }
-                return res.json(obj)
-            } else {
-                return res.json(errors)
-            }
 
+                return res.json(obj);
+            } else {
+                return res.json(errors);
+            }
         } catch (error) {
-            return res.json({ error: error })
+            return res.json({ error: error });
         }
     }
+
 
 
     async getLogs(req: Request, res: Response): Promise<Response> {
